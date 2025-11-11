@@ -8,6 +8,7 @@ const aboutSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    skills: [{ type: String }],
     contactMe: {
         email: {
             type: String,

@@ -8,6 +8,9 @@ const projectSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    projectThumbNail: {
+        type: String
+    },
     longBio: { type: String, required: true },
     techStack: {
         type: [String],
