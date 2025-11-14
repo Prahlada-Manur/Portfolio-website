@@ -1,5 +1,5 @@
 const About = require('../model/about-model');
-const {cloudinary}=require('../middleware/uploadMiddleware')
+const { cloudinary } = require('../middleware/uploadMiddleware')
 const aboutCltr = {};
 
 //---------------------------------------API add for About----------------------------------------------------------------
@@ -37,7 +37,7 @@ aboutCltr.getAbout = async (req, res) => {
         if (!getAbout) {
             return res.status(404).json({ error: "Info not found" })
         }
-        res.status(200).json({ message: "Information", getAbout })
+        res.status(200).json( getAbout )
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Internal Server Error" })
@@ -56,7 +56,8 @@ aboutCltr.uploadProfilePic = async (req, res) => {
             return res.status(404).json({ error: 'About not found' })
         }
         if (about.portfolioPicUrl) {
-            const public_id = about.portfolioPicUrl.split('/').slice(-1)[0].split('.')[0];
+            const filename = about.portfolioPicUrl.split('/').slice(-1)[0].split('?')[0];
+            const public_id = filename.split('.').slice(0, -1).join('.');
             await cloudinary.uploader.destroy(`portfolio/uploads/about/${public_id}`)
         }
         about.portfolioPicUrl = req.file.path
@@ -73,12 +74,13 @@ aboutCltr.uploadResume = async (req, res) => {
         return res.status(400).json({ error: "Please upload a resume" });
     }
     try {
-        const about = await About.findOne({ user: userId })
+        const about = await About.findOne({ user: req.userId })
         if (!about) {
             return res.status(404).json({ error: "resume link not found" })
         }
         if (about.resumeLink) {
-            const public_id = about.resumeLink.split('/').slice(-1)[0].split('.')[0];
+            const filename = about.resumeLink.split('/').slice(-1)[0].split('?')[0];
+            const public_id = filename.split('.').slice(0, -1).join('.');
             await cloudinary.uploader.destroy(`portfolio/uploads/about/${public_id}`)
         }
         about.resumeLink = req.file.path;

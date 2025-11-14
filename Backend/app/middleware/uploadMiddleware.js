@@ -11,7 +11,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: async (req, file) => {
-        let folderPath = 'porfolio/uploads';
+        let folderPath = 'portfolio/uploads';
         if (file.fieldname === 'portfolioPicUrl' || file.fieldname === 'resumeLink') {
             folderPath = `${folderPath}/about`
         } else if (file.fieldname === 'projectThumbNail') {

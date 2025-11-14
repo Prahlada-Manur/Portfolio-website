@@ -1,24 +1,17 @@
-import { useEffect, useState } from "react";
-import axios from "../config/axios";
-export default function About() {
-  const [data, setData] = useState(null);
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await axios.get("/api/about");
-        console.log(response.data);
-        setData(response.data);
-      } catch (err) {
-        console.log(err);
-      }
-    })();
-  }, []);
-  if (!data) {
-    return <p>Loading........</p>;
-  }
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+
+export default function AboutContainer() {
+  const { data, loading, errors } = useSelector((state) => state.about);
+
+  if (loading) return <h2>Loading...</h2>;
+  if (errors) return <h2>Error: {errors}</h2>;
+  if (!data) return <h2>No About Information Available</h2>;
+
   return (
     <div>
-       <h2>About Information</h2>
+    <Link to='/AboutForm'><button>Edit About</button></Link>
+      <h2>About Information</h2>
       <h3>Name: {data.name}</h3>
       {data.portfolioPicUrl && (
         <div>

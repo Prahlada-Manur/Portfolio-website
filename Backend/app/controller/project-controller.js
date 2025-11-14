@@ -4,8 +4,10 @@ const projectCltr = {};
 //-------------------------------API for add Project-------------------------------------------------------------
 projectCltr.addProject = async (req, res) => {
     const body = req.body
-
     try {
+        if (body.techStack) {
+            body.techStack = JSON.parse(body.techStack);
+        }
         const projectThumbNail = req.file ? req.file.path : undefined
         const newProject = new Project({ ...body, projectThumbNail, user: req.userId })
         const projectSave = await newProject.save();
@@ -22,7 +24,7 @@ projectCltr.getAllProject = async (req, res) => {
         if (!projects) {
             return res.status(404).json({ error: "Project not found" })
         }
-        res.status(200).json({ message: "List of Projects", projects })
+        res.status(200).json(projects)
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Internal server error" })
@@ -36,7 +38,7 @@ projectCltr.getById = async (req, res) => {
         if (!oneProject) {
             return res.status(404).json({ error: "Project not found" })
         }
-        res.status(200).json({ message: "The project you requested for", oneProject })
+        res.status(200).json(oneProject)
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Internal server error" })
@@ -47,13 +49,17 @@ projectCltr.update = async (req, res) => {
     const id = req.params.id;
     const body = { ...req.body }
     try {
+        if (body.techStack) {
+            body.techStack = JSON.parse(body.techStack);
+        }
         const project = await Project.findById(id)
         if (!project) {
             return res.status(404).json({ error: "Project not found" })
         }
         if (req.file && project.projectThumbNail) {
-            const public_id = project.projectThumbNail.split('/').slice(-1)[0].split('.')[0];
-            await cloudinary.uploader.destroy(`potfolio/uploads/porjects/${public_id}`)
+            const filename = project.projectThumbNail.split('/').slice(-1)[0].split('?')[0];
+            const public_id = filename.split('.').slice(0, -1).join('.');
+            await cloudinary.uploader.destroy(`portfolio/uploads/projects/${public_id}`)
             body.projectThumbNail = req.file.path
         }
         const updatedData = await Project.findByIdAndUpdate(id, body, { new: true })
@@ -76,7 +82,8 @@ projectCltr.delete = async (req, res) => {
             return res.status(404).json({ error: "Project not found to delete" })
         }
         if (deleteProject.projectThumbNail) {
-            const public_id = deleteProject.projectThumbNail.split('/').slice(-1)[0].split('.')[0]
+            const filename = deleteProject.projectThumbNail.split('/').slice(-1)[0].split('?')[0];
+            const public_id = filename.split('.').slice(0, -1).join('.');
             await cloudinary.uploader.destroy(`portfolio/uploads/projects/${public_id}`)
         }
         res.status(200).json({ message: "The project is deleted", deleteProject })
