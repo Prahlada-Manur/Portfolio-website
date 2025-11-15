@@ -1,17 +1,27 @@
 import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { FetchProjectById } from "../slices/projectSlice";
+import { fetchProjectById, deleteProject } from "../slices/projectSlice";
 export default function ProjectSpecific() {
-  const { single, loading } = useSelector((state) => {
+  const { single, loading, errors } = useSelector((state) => {
     return state.project;
   });
   const dispatch = useDispatch();
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
   const { id } = useParams();
+
   useEffect(() => {
-    dispatch(FetchProjectById(id));
-  }, []);
+    dispatch(fetchProjectById(id));
+  }, [id]);
+
+  const handleDelete = (id) => {
+    const confirm = window.confirm("Are you sure?");
+    if (confirm) {
+      dispatch(deleteProject(id));
+      navigate("/dashboard");
+    }
+  };
+
   if (loading || !single) {
     return <p>loading.......</p>;
   }
@@ -49,7 +59,13 @@ export default function ProjectSpecific() {
         <Link to={`/dashboard/specific/${id}/edit`}>Edit Project</Link>
       </button>
 
-   { /*<button onClick={handleDelete}>Delete Project</button>*/}
+      <button
+        onClick={() => {
+          handleDelete(id);
+        }}
+      >
+        Delete Project
+      </button>
     </div>
   );
 }

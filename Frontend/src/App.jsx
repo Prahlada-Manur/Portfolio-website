@@ -7,12 +7,13 @@ import Dashboard from "./pages/Dashboard";
 import GetOneProject from "./pages/GetOneProject";
 import loginContext from "./context/login-Context";
 import { useContext, useEffect } from "react";
-import { fetchAbout } from "./slices/aboutSlice";
+import { fetchAbout, resetAbout } from "./slices/aboutSlice";
 import { useDispatch } from "react-redux";
 import AboutForm from "./pages/AboutFOrm";
-import { fetchProject } from "./slices/projectSlice";
+import { fetchProject, resetProject } from "./slices/projectSlice";
 import ProjectForm from "./pages/ProjectForm";
 import ProjectSpecific from "./pages/ProjectSpecific";
+import PrivateRoute from "./pages/PrivateRoute";
 //--------------------------------------------------------------------------------------------------------------------
 export default function App() {
   const { isLoggedIn, handleLogout } = useContext(loginContext);
@@ -45,7 +46,15 @@ export default function App() {
                 <Link to="/dashboard">Dashboard</Link>
               </li>
               <li>
-                <button onClick={handleLogout}>Logout</button>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    dispatch(resetAbout());
+                    dispatch(resetProject());
+                  }}
+                >
+                  Logout
+                </button>
               </li>
             </>
           )}
@@ -56,11 +65,46 @@ export default function App() {
         <Route path="/projects" element={<Project />} />
         <Route path="/projects/:id" element={<GetOneProject />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/aboutForm" element={<AboutForm />} />
-        <Route path="/dashboard/add" element={<ProjectForm />} />
-        <Route path="/dashboard/specific/:id" element={<ProjectSpecific />} />
-        <Route path="/dashboard/specific/:id/edit" element={<ProjectForm/>}/>
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/aboutForm"
+          element={
+            <PrivateRoute>
+              <AboutForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/add"
+          element={
+            <PrivateRoute>
+              <ProjectForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/specific/:id"
+          element={
+            <PrivateRoute>
+              <ProjectSpecific />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/specific/:id/edit"
+          element={
+            <PrivateRoute>
+              <ProjectForm />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </div>
   );

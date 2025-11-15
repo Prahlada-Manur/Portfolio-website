@@ -7,7 +7,6 @@ export const fetchAbout = createAsyncThunk(
   async (undefined, { rejectWithValue }) => {
     try {
       const response = await axios.get("/api/about");
-      console.log(response.data);
       return response.data;
     } catch (err) {
       console.log(err);
@@ -38,7 +37,11 @@ const aboutSlice = createSlice({
     data: [],
     errors: null,
     loading: null,
-    editId: null,
+  },
+  reducers: {
+    resetAbout: (state) => {
+      (state.data = []), (state.errors = null), (state.loading = null);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -68,3 +71,4 @@ const aboutSlice = createSlice({
   },
 });
 export default aboutSlice.reducer;
+export const { resetAbout } = aboutSlice.actions;

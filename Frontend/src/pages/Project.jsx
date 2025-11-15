@@ -1,33 +1,41 @@
 import { useEffect, useState } from "react";
 import axios from "../config/axios";
 import { Link } from "react-router-dom";
-//----------------------------------------------------------------------------------------
+
 export default function Project() {
-  const [project, setProject] = useState([]);
+  const [projects, setProjects] = useState([]);
+
   useEffect(() => {
     (async () => {
       try {
         const response = await axios.get("/api/projects");
-        console.log(response.data);
-        setProject(response.data);
+        setProjects(response.data);
       } catch (err) {
         console.log(err);
       }
     })();
   }, []);
-  //--------------------------------------------------------------------------------------------------
+
+  if (!projects.length) return <p>Loading projects...</p>;
+
   return (
     <div>
       <h2>Projects</h2>
-      <ul>
-        {project.map((ele) => {
-          return (
-            <li key={ele._id}>
-              <Link to={`/projects/${ele._id}`}>{ele.projectName}</Link>
-            </li>
-          );
-        })}
-      </ul>
+
+      {projects.map((ele) => (
+        <div key={ele._id} style={{ marginBottom: "20px" }}>
+          {ele.projectThumbNail && (
+            <img src={ele.projectThumbNail} width="180" alt="thumbnail" />
+          )}
+
+          <h3>{ele.projectName}</h3>
+          <p>{ele.shortBio}</p>
+
+          <Link to={`/projects/${ele._id}`}>
+            <button>View More</button>
+          </Link>
+        </div>
+      ))}
     </div>
   );
 }

@@ -5,6 +5,7 @@ const port = process.env.PORT || 3090
 const app = express();
 app.use(express.json());
 app.use(cors())
+const multer = require("multer")
 //-----------------------------------------------------------------------------------------
 const configDB = require('./config/configDB');
 const userCltr = require('./app/controller/user-controller');
@@ -26,7 +27,15 @@ app.put('/api/about', authenticateUser, aboutCltr.update) // to update thr about
 app.get('/api/about', aboutCltr.getAbout) // to get the about information
 app.post('/api/uploadPic', authenticateUser,upload.single('portfolioPicUrl'), aboutCltr.uploadProfilePic); // to upload the profilePic
 app.post('/api/upload/resume', authenticateUser,upload.single('resumeLink'), aboutCltr.uploadResume) // to upload the resume
+//-----------------------------------------------------------------------------------------------------------------------------
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: err.message });
+  }
+  return res.status(500).json({ error: "Internal server error" });
+});
 
+//--------------------------------------------------------------------------------------------------------------------------------
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 })
