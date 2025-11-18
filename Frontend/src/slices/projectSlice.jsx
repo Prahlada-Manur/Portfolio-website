@@ -10,7 +10,7 @@ export const fetchProject = createAsyncThunk(
       return response.data;
     } catch (err) {
       console.log(err);
-      rejectWithValue(err.response.data.error);
+     return rejectWithValue(err.response.data.error);
     }
   }
 );
@@ -23,7 +23,7 @@ export const fetchProjectById = createAsyncThunk(
       return response.data;
     } catch (err) {
       console.log(err);
-      rejectWithValue(err.response.data.error);
+     return  rejectWithValue(err.response.data.error);
     }
   }
 );
@@ -38,7 +38,7 @@ export const deleteProject = createAsyncThunk(
       return response.data;
     } catch (err) {
       console.log(err);
-      rejectWithValue(err.response.data.error);
+      return rejectWithValue(err.response.data.error);
     }
   }
 );
