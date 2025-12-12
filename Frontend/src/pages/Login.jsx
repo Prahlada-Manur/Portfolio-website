@@ -1,125 +1,76 @@
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { useContext, useEffect } from "react";
-import loginContext from "../context/login-Context";
+const User = require("../model/user-model");
+const jwt = require("jsonwebtoken");
+const bcryptjs = require("bcryptjs");
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+const userCltr = {};
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+userCltr.login = async (req, res) => {
+  const body = req.body;
 
-export default function Login() {
-  const { handleLogin, serverError, handleClearError } =
-    useContext(loginContext);
+  try {
+    let user = await User.findOne(); // Only 1 admin user
 
-  const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-    },
-    validationSchema: Yup.object({
-      email: Yup.string().email("Invalid Email").required("Email is required"),
-      password: Yup.string()
-        .min(8, "Password must be at least 8 characters")
-        .required("Password is required"),
-    }),
-    onSubmit: (values, { resetForm }) => {
-      handleLogin(values, resetForm);
-    },
-  });
+    // If no admin exists → create one
+    if (!user) {
+      const salt = await bcryptjs.genSalt();
+      const hash = await bcryptjs.hash(body.password, salt);
 
-  useEffect(() => {
-    handleClearError();
-  }, []);
+      user = new User({
+        email: body.email,
+        password: hash,
+        name: "Admin",
+      });
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+      await user.save(); // FIXED THIS
 
-      {/* Admin Notice */}
-      <p className="text-amber-300 text-lg font-semibold tracking-wide mb-6">
-        Only the admin can login
-      </p>
+      const token = jwt.sign(
+        { userId: user._id },
+        process.env.JWT_SECRET, // This was undefined earlier
+        { expiresIn: "7d" }
+      );
 
-      {/* Login Card */}
-      <Card className="bg-slate-800 text-white w-full max-w-md shadow-lg rounded-xl">
-        <CardHeader>
-          <CardTitle className="text-center text-amber-300 text-2xl">
-            Login
-          </CardTitle>
-        </CardHeader>
+      return res.status(201).json({
+        message: "Admin created successfully!",
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+        },
+      });
+    }
 
-        <CardContent>
-          {/* Server Error */}
-          {serverError && (
-            <p className="text-red-400 text-center mb-4 font-medium">
-              {serverError}
-            </p>
-          )}
+    // Check if email is admin's
+    if (body.email !== user.email) {
+      return res
+        .status(403)
+        .json({ error: "Access denied. Only admin can login." });
+    }
 
-          {/* Form */}
-          <form onSubmit={formik.handleSubmit} className="space-y-5">
+    // Validate password
+    const isMatch = await bcryptjs.compare(body.password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid password" });
+    }
 
-            {/* Email */}
-            <div>
-              <label className="block mb-1 font-medium text-gray-200">
-                Email
-              </label>
+    // Generate token
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
-              <Input
-                type="text"
-                name="email"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                placeholder="Enter your email"
-                className="bg-slate-700 border-slate-600 text-white"
-              />
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
 
-              {formik.errors.email && formik.touched.email && (
-                <p className="text-red-400 text-sm mt-1">
-                  {formik.errors.email}
-                </p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block mb-1 font-medium text-gray-200">
-                Password
-              </label>
-
-              <Input
-                type="password"
-                name="password"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                placeholder="Enter your password"
-                className="bg-slate-700 border-slate-600 text-white"
-              />
-
-              {formik.errors.password && formik.touched.password && (
-                <p className="text-red-400 text-sm mt-1">
-                  {formik.errors.password}
-                </p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              className="w-full bg-amber-300 text-black font-semibold hover:bg-amber-400"
-            >
-              Login
-            </Button>
-
-          </form>
-        </CardContent>
-      </Card>
-
-    </div>
-  );
-}
+module.exports = userCltr;
