@@ -35,7 +35,7 @@ export const deleteProject = createAsyncThunk(
       const response = await axios.delete(`/api/project/${id}`, {
         headers: { Authorization: localStorage.getItem("token") },
       });
-      return response.data;
+      return response.data.deletedProject;
     } catch (err) {
       console.log(err);
       return rejectWithValue(err.response.data.error);

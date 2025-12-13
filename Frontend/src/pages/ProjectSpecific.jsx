@@ -156,8 +156,8 @@ export default function ProjectSpecific() {
 
               <AlertDialogAction
                 className="bg-red-500 hover:bg-red-600 text-white"
-                onClick={() => {
-                  dispatch(deleteProject(id));
+                onClick={async () => {
+                  await dispatch(deleteProject(id)).unwrap();
                   navigate("/dashboard");
                 }}
               >

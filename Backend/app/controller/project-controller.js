@@ -77,7 +77,7 @@ projectCltr.update = async (req, res) => {
 projectCltr.delete = async (req, res) => {
     const id = req.params.id;
     try {
-        const deleteProject = await Project.findOneAndDelete( id, {user: req.userId })
+        const deleteProject = await Project.findOneAndDelete({ _id: id, user: req.userId })
         if (!deleteProject) {
             return res.status(404).json({ error: "Project not found to delete" })
         }
@@ -86,7 +86,7 @@ projectCltr.delete = async (req, res) => {
             const public_id = filename.split('.').slice(0, -1).join('.');
             await cloudinary.uploader.destroy(`portfolio/uploads/projects/${public_id}`)
         }
-        res.status(200).json(deleteProject)
+        res.status(200).json({ message: "Project deleted successfully", deletedProject: deleteProject })
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Internal server error" })
