@@ -18,7 +18,7 @@ userCltr.login = async (req, res) => {
                 password: hash,
                 name: "Admin"
             });
-            await admin.save();
+            await user.save();
             const token = jwt.sign(
                 { userId: user._id },
                 process.env.JWT_SECRET,
