@@ -33,7 +33,7 @@ export default function AuthProvider(props) {
       navigate("/dashboard");
     } catch (err) {
       console.log(err);
-      Dispatch({ type: SERVER_ERROR, payload: err.response.data.error });
+      Dispatch({ type: SERVER_ERROR, payload: err?.response?.data?.error });
     }
   };
   const handleLogout = () => {
