@@ -58,7 +58,7 @@ export default function App() {
                       className="text-white hover:text-amber-300 "
                       asChild
                     >
-                      <Link to="/about">About</Link>
+                      <Link to="/">About</Link>
                     </NavigationMenuLink>
                   </NavigationMenuItem>
 
@@ -118,7 +118,7 @@ export default function App() {
       {/* MAIN CONTENT */}
       <main className="max-w-6xl mx-auto p-4">
         <Routes>
-          <Route path="/about" element={<About />} />
+          <Route path="/" element={<About />} />
           <Route path="/projects" element={<Project />} />
           <Route path="/projects/:id" element={<GetOneProject />} />
           <Route path="/login" element={<Login />} />

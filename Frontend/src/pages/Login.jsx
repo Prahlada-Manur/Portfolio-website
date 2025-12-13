@@ -1,76 +1,87 @@
-const User = require("../model/user-model");
-const jwt = require("jsonwebtoken");
-const bcryptjs = require("bcryptjs");
+import * as Yup from "yup";
+import { useContext, useEffect } from "react";
+import { useFormik } from "formik";
+import loginContext from "../context/login-Context";
 
-const userCltr = {};
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-userCltr.login = async (req, res) => {
-  const body = req.body;
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-  try {
-    let user = await User.findOne(); // Only 1 admin user
+export default function Login() {
+  const { handleLogin, serverError, handleClearError } =
+    useContext(loginContext);
 
-    // If no admin exists → create one
-    if (!user) {
-      const salt = await bcryptjs.genSalt();
-      const hash = await bcryptjs.hash(body.password, salt);
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema: Yup.object({
+      email: Yup.string().email("Invalid Email").required("Email is required"),
+      password: Yup.string()
+        .min(8, "Password must be at least 8 characters")
+        .required("Password is required"),
+    }),
+    onSubmit: (values, { resetForm }) => {
+      handleLogin(values, resetForm);
+    },
+  });
 
-      user = new User({
-        email: body.email,
-        password: hash,
-        name: "Admin",
-      });
+  useEffect(() => {
+    handleClearError();
+  }, [handleClearError]);
 
-      await user.save(); // FIXED THIS
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+      <p className="text-amber-300 text-lg font-semibold mb-6">
+        Only the admin can login
+      </p>
 
-      const token = jwt.sign(
-        { userId: user._id },
-        process.env.JWT_SECRET, // This was undefined earlier
-        { expiresIn: "7d" }
-      );
+      <Card className="bg-slate-800 text-white w-full max-w-md rounded-xl">
+        <CardHeader>
+          <CardTitle className="text-center text-amber-300 text-2xl">
+            Login
+          </CardTitle>
+        </CardHeader>
 
-      return res.status(201).json({
-        message: "Admin created successfully!",
-        token,
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-        },
-      });
-    }
+        <CardContent>
+          {serverError && (
+            <p className="text-red-400 text-center mb-4">{serverError}</p>
+          )}
 
-    // Check if email is admin's
-    if (body.email !== user.email) {
-      return res
-        .status(403)
-        .json({ error: "Access denied. Only admin can login." });
-    }
+          <form onSubmit={formik.handleSubmit} className="space-y-5">
+            <div>
+              <label>Email</label>
+              <Input
+                name="email"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+              />
+              {formik.touched.email && formik.errors.email && (
+                <p className="text-red-400 text-sm">{formik.errors.email}</p>
+              )}
+            </div>
 
-    // Validate password
-    const isMatch = await bcryptjs.compare(body.password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ error: "Invalid password" });
-    }
+            <div>
+              <label>Password</label>
+              <Input
+                type="password"
+                name="password"
+                value={formik.values.password}
+                onChange={formik.handleChange}
+              />
+              {formik.touched.password && formik.errors.password && (
+                <p className="text-red-400 text-sm">{formik.errors.password}</p>
+              )}
+            </div>
 
-    // Generate token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
-
-    return res.status(200).json({
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-      },
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-module.exports = userCltr;
+            <Button type="submit" className="w-full bg-amber-300 text-black">
+              Login
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
