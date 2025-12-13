@@ -141,8 +141,10 @@ const projectSlice = createSlice({
         state.errors = action.payload;
       })
       .addCase(deleteProject.fulfilled, (state, action) => {
-        const idx = state.data.findIndex((ele) => ele._id == action.payload._id);
-        state.data.splice(idx, 1);
+        const idx = state.data.findIndex((ele) => ele._id === action.payload._id);
+        if (idx !== -1) {
+          state.data.splice(idx, 1);
+        }
       })
       .addCase(createProject.fulfilled, (state, action) => {
         state.data.push(action.payload);
